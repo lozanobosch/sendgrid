@@ -1,0 +1,86 @@
+code:
+-X GET 
+-H "Content-Type: application/json"
+-H "Authorization: {{key}}" 
+-S
+----
+upcode:
+-X POST 
+-H "Content-Type: application/json"
+-H "Authorization: {{authToken}}" 
+-d @$$_upRequest
+-S 
+----
+downcode:
+-X GET  
+-H "Authorization: {{authToken}}"
+--dump-header $header 
+-S
+----
+uploadFilecURL:
+-X POST 
+-H "Authorization: {{uploadAuthToken}}"
+-H "X-Bz-File-Name: {{fileNameEncoded}}"
+-H "Content-Type: b2/x-auto"
+-H "X-Bz-Content-Sha1: {{sha1}}"
+-H "X-Bz-Info-Author: unknown"
+--data-binary @$$_container
+----
+URL:
+https://api.backblazeb2.com/b2api/v2/b2_authorize_account
+----
+claves:
+Let ( [
+$$_bbID=GetValue ( $$_ls ; 1 );
+$$_appKey=GetValue ( $$_ls ; 2 );
+$$_bucketID=GetValue ( $$_ls ; 3 );
+$$_reference=GetValue ( $$_ls ; 4 );
+_b64= Base64Encode ( $$_bbID & ":" & $$_appKey );
+$$_key= "Basic " & Left ( _b64; Length ( _b64 ) - 1 );
+$$__cURL= Substitute ( $$__code ; "{{key}}" ; $$_key )
+
+]; 0 )
+----
+respuesta:
+Let ( [
+$$_apiURL= JSONGetElement ( $$_resp ; "apiUrl" );
+$$_authToken= JSONGetElement ( $$_resp ; "authorizationToken" );
+$$_downURL= JSONGetElement ( $$_resp ; "downloadUrl" );
+$$_authTS= Get ( CurrentTimestamp );
+$$_upURL= $$_apiURL & "/b2api/v2/b2_get_upload_url";
+$$_upRequest=JSONSetElement ( "{}" ; "bucketId" ; $$_bucketID ; JSONString );
+$$_upcURL=Substitute ( $$__upcode; "{{authToken}}" ; $$_authToken )
+
+]; "" )
+----
+upRespuesta:
+Let ( [
+$$_uploadURL= JSONGetElement ( $$_upResp ; "uploadUrl" );
+$$_upAuthToken= JSONGetElement ( $$_upResp ; "authorizationToken" );
+$$_upAuthTS=Get ( CurrentTimestamp )
+
+]; "" )
+----
+upData:
+Let ( [
+$$_container= GetField ( $$_reference );
+$$_filename= GetContainerAttribute ( GetField ( $$_reference ); "filename" );
+$$_fileNameEncoded= GetAsURLEncoded ( $$_fileName );
+$$_sha1= HexEncode ( CryptDigest (GetField ( $$_reference ) ; "SHA1" ) );
+$$_error="";
+$$_upFilecURL= Substitute ($$__uploadFilecURL; ["{{uploadAuthToken}}" ; $$_upAuthToken];["{{fileNameEncoded}}" ; $$_fileNameEncoded];["{{sha1}}" ; $$_sha1] )
+]; "" )
+----
+upFileResultado:
+Let ( [
+$$_uploadFileID= JSONGetElement ( $$_upFileResp ; "fileId" )
+
+]; "" )
+----
+download:
+Let ( [
+$$_downURL= $$_downURL & "/b2api/v2/b2_download_file_by_id?fileId=" & $fileID;
+$$_downcURL=Substitute ( $$__downcode; "{{authToken}}" ; $$_authToken )
+
+]; "" )
+----
