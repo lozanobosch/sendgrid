@@ -1,3 +1,12 @@
+sendcode:
+X-POST
+--header "Authorization: Bearer {{key}}
+--header 'Content-Type: application/json'
+--data '{"personalizations": [{"to": [{"email": "{{destinatario}}"}]}],"from": {"email": "{{remitente}}"},"subject": "{{asunto}}","content": [{"type": "text/plain", "value": "{{cuerpo}}"}]}'
+----
+sendurl:
+https://api.sendgrid.com/v3/mail/send
+----
 code:
 -X GET 
 -H "Content-Type: application/json"
