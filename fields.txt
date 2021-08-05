@@ -45,7 +45,7 @@ $$_destinatario=GetValue ( $$_ls ; 2 );
 $$_remitente=GetValue ( $$_ls ; 3 );
 $$_asunto=GetValue ( $$_ls ; 4 );
 $$_cuerpo=GetValue ( $$_ls ; 5 );
-$$__cURL= Substitute ( $$__sendcode ; "{{key}}" ; $$_key )
+$$__scURL= Substitute ( $$__sendcode ; "{{key}}" ; $$_key )
 
 ]; 0 )
 ----
