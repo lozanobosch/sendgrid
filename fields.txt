@@ -7,37 +7,6 @@ X-POST
 sendurl:
 https://api.sendgrid.com/v3/mail/send
 ----
-code:
--X GET 
--H "Content-Type: application/json"
--H "Authorization: {{key}}" 
--S
-----
-upcode:
--X POST 
--H "Content-Type: application/json"
--H "Authorization: {{authToken}}" 
--d @$$_upRequest
--S 
-----
-downcode:
--X GET  
--H "Authorization: {{authToken}}"
---dump-header $header 
--S
-----
-uploadFilecURL:
--X POST 
--H "Authorization: {{uploadAuthToken}}"
--H "X-Bz-File-Name: {{fileNameEncoded}}"
--H "Content-Type: b2/x-auto"
--H "X-Bz-Content-Sha1: {{sha1}}"
--H "X-Bz-Info-Author: unknown"
---data-binary @$$_container
-----
-URL:
-https://api.backblazeb2.com/b2api/v2/b2_authorize_account
-----
 sendclaves:
 Let ( [
 $$_key=GetValue ( $$_ls ; 1 );
